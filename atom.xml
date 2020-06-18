@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>PY 部落格</title>
+  
+  
+  <link href="/blog/atom.xml" rel="self"/>
+  
+  <link href="http://yoursite.com/"/>
+  <updated>2020-06-18T17:32:18.191Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name>Pei-Ya Chiu</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Python 尬設計模式：沒有 Interface，但有 abc</title>
+    <link href="http://yoursite.com/2020/06/17/python-interface-use-abc/"/>
+    <id>http://yoursite.com/2020/06/17/python-interface-use-abc/</id>
+    <published>2020-06-17T22:07:34.000Z</published>
+    <updated>2020-06-18T17:32:18.191Z</updated>
+    
+    <content type="html"><![CDATA[<p>本篇文章用來記錄我在工作上寫 Python 時使用 Design Pattern 的一些心得。</p><p>Python 不是一個典型的 OOP 語言（相對於 Java 而言），要用 Python 寫 OOP 時難免有些卡卡的。如果你跟我一樣先從別的語言（Java, C++, …）學過 Design Pattern 了，現在想把知識拉到 Python 用卻不知道從何下手，這篇文章可能會對你有些幫助。</p><p>（另外，本文預設讀者已經懂 OOP、Design Pattern、Interface 與 Python）<br>（如果沒有先行知識，這篇文章可能會讓你看得很混淆，慎入！）</p><h2 id="Python-沒有-Interface"><a href="#Python-沒有-Interface" class="headerlink" title="Python 沒有 Interface"></a>Python 沒有 Interface</h2><p>Design Pattern 經常需要使用 Interface 來達成多型。Python 原生沒有 Interface，但還是有些方法可以做出 Interface。</p><h3 id="Option-1-Interface-是啥？我有多重繼承！"><a href="#Option-1-Interface-是啥？我有多重繼承！" class="headerlink" title="Option 1: Interface 是啥？我有多重繼承！"></a>Option 1: Interface 是啥？我有多重繼承！</h3><p>Python 可以多重繼承，基本上可以寫一堆 class 叫做 XxxInterface，然後多重繼承這些 class 就好。不過這樣的寫法會重用 Super class 的實作，跟 Interface 的主功能：定義需要的 property/method/input/output 而不實作，還是有一點點差異。</p><h3 id="Option-2-abc-Abstract-Base-Class"><a href="#Option-2-abc-Abstract-Base-Class" class="headerlink" title="Option 2: abc (Abstract Base Class)"></a>Option 2: abc (Abstract Base Class)</h3><p>要更 fancy 的話， 用 abc 這個 <del>名字有點鬧的</del> module 可以寫出更接近 “Interface” 的東西。</p><p>要定義一個 Interface，你需要寫一個 class 繼承 <code>abc.ABC</code>，並把 <code>abstract method</code> 跟 <code>abstract property</code> decorate 好，這就是你的 Interface。要實作這個 Interface 時用繼承的就好。</p><p>以下是範例：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">import abc</span><br><span class="line"></span><br><span class="line"># 定義 Interface</span><br><span class="line"></span><br><span class="line">class BookInterface(abc.ABC):</span><br><span class="line">    # 定義 read-only property</span><br><span class="line">    @abstractproperty</span><br><span class="line">    def author(self):</span><br><span class="line">        return self.__author</span><br><span class="line"></span><br><span class="line">    # 定義 read-write abstract property</span><br><span class="line">    def getp(self):</span><br><span class="line">        return self.__price</span><br><span class="line"></span><br><span class="line">    def setp(self, value):</span><br><span class="line">        self.__price &#x3D; value</span><br><span class="line"></span><br><span class="line">    price &#x3D; abc.abstractproperty(getp, setp)</span><br><span class="line"></span><br><span class="line">    # 定義 abstract method</span><br><span class="line">    @abc.abstractmethod</span><br><span class="line">    def read(self):</span><br><span class="line">        print(&quot;Interface Impl&quot;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># 繼承（實作） BookInterface</span><br><span class="line"></span><br><span class="line">class AmazonEbook(BookInterface):</span><br><span class="line">    @property</span><br><span class="line">    def price(self):</span><br><span class="line">        return self.__price</span><br><span class="line"></span><br><span class="line">    @price.setter</span><br><span class="line">    def price(self, value):</span><br><span class="line">        self.__price &#x3D; value</span><br><span class="line"></span><br><span class="line">    def read(self):</span><br><span class="line">        print(&quot;AmazonEbook read&quot;)</span><br></pre></td></tr></table></figure><p>上面抄走就可以開始寫 Interface 囉！</p><p>\OOP/ \Design Pattern/ \Polymorphism/ 尬起來！</p><h4 id="Abstract-Base-Class-提供的好處"><a href="#Abstract-Base-Class-提供的好處" class="headerlink" title="Abstract Base Class 提供的好處"></a>Abstract Base Class 提供的好處</h4><p>如前面所說，多重繼承其實就可以處理基本的 Interface 問題了，而相對於用多重繼承硬尬，ABC 還多提供了以下輔助：</p><ol><li><p>如果少 implement 了 abstract method 或 abstract property，Object initialization 時會報 <code>TypeError</code>。</p></li><li><p>使用 abc 可以 overload <code>__subclasscheck__</code>, <code>__instancecheck__</code>，讓你有機會改變 <code>issubclass()</code> 跟  <code>isinstance()</code> 的預設行為。</p></li></ol><p>另外還有些好處可能跟 extend / implement 一些 built-in Type 如 Sets, Sequences 有關，但這部分我不熟所以就不多做介紹以免誤導，有興趣的人可以看看 <a href="https://www.python.org/dev/peps/pep-3119/" target="_blank" rel="noopener">PEP 3119</a>。</p><h4 id="Abstract-Base-Class-依舊不是-Interface"><a href="#Abstract-Base-Class-依舊不是-Interface" class="headerlink" title="Abstract Base Class 依舊不是 Interface"></a>Abstract Base Class 依舊不是 Interface</h4><p>拿 abc 當 Interface 用，寫一寫可能還是會發現哪裡怪怪的。<br>這邊列了一些從 Interface 轉來的人會覺得 abc</p><ol><li><p>如果少 implement 了什麼 method，會到 init object 才噴錯。這算是 Python 的原罪，可以使用 Pylint 之類的 linter 自動找出沒 implement 的 method 來處理掉這個問題。</p></li><li><p>abstract method <strong><em>可以</em></strong> 有 concrete implementation，並能用 super() 取用：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class SimpleInterface(abc.ABC):</span><br><span class="line">    @abc.abstractmethod</span><br><span class="line">    def method_a(self):</span><br><span class="line">        print(&quot;I&#39;m from an Interface.&quot;)</span><br><span class="line"></span><br><span class="line">class SimpleConcrete(SimpleInterface):</span><br><span class="line">    def method_a(self):</span><br><span class="line">        super().method_a()</span><br><span class="line"></span><br><span class="line">SimpleConcrete().method_a() # 會印出 &quot;I&#39;m from an Interface.&quot;</span><br></pre></td></tr></table></figure></li><li><p>Implement abstract method 時，arguments 名稱跟數量都可以不一樣。（但有的 linter 會提示你請取一樣的名稱）</p></li><li><p>甚至也 <strong><em>可以</em></strong> 用 property implement method 或用 method implement property。<br>（畢竟 Python 是 first class function，大家都是 object）<br>（只是 call 錯時還是會噴錯就是了XD）</p></li></ol><h2 id="但我聽說-Python-是-Duck-Typing-所以根本不用-Interface？"><a href="#但我聽說-Python-是-Duck-Typing-所以根本不用-Interface？" class="headerlink" title="但我聽說 Python 是 Duck Typing 所以根本不用 Interface？"></a>但我聽說 Python 是 Duck Typing 所以根本不用 Interface？</h2><p><a href="https://en.wikipedia.org/wiki/Duck_typing" target="_blank" rel="noopener">Duck Typing</a>（鴨子型別）的意思是：「當看到一隻鳥走起來像鴨子、游泳起來像鴨子、叫起來也像鴨子，那麼這隻鳥就可以被稱為鴨子。」<br>也就是說一個 class 不管他實際上繼承自哪，只要有相應的 method/property，Python 就允許這個 class 到處 <del>招搖撞騙</del> 被當作其他特定 class 使用。</p><p>abc 的作者也在 PEP-3119 有一段 <a href="https://www.python.org/dev/peps/pep-3119/#abcs-vs-duck-typing" target="_blank" rel="noopener">ABCs v.s Duck Typing 的討論</a>。大意是說 abc 不是拿來殺害 Duck Typing 的。很多時候只要使用 <code>hasattr()</code> 來判斷需要的 attribute 存在就已經寫的 666 了，那就不一定要使用 abc。</p><p>其實我自己覺得 Python 的 Duck Typing 跟多重繼承，合起來是 self-contained 的一套了。至少在 2007 年以前 abc 都不存在，與其尋找類 Interface 的替代品，不如深入了解 Python 語言本身的強項/限制/理念，來找出情境下最合適的寫法。雖然我在上面列了一些 abc 會讓人感到「怪怪的」點，但再稍微思考一下，那些點都不是 abc 故意設計的，而是 Python 本身特性自然造就的而已。</p><p>就算到今日 abc 已經很成熟，何時使用 abc、如何使用也都該交由使用情境來決定，總之就是沒有銀彈。</p><p>最後推薦閱讀本文不斷出現的 <a href="https://www.python.org/dev/peps/pep-3119/" target="_blank" rel="noopener">PEP-3119</a>，這是當初 Python 社群提出 abc 的 proposal。裡面詳細寫了為什麼要有 abc、相關用法以及跟其他 alternatives 的比較討論。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;本篇文章用來記錄我在工作上寫 Python 時使用 Design Pattern 的一些心得。&lt;/p&gt;
+&lt;p&gt;Python 不是一個典型的 OOP 語言（相對於 Java 而言），要用 Python 寫 OOP 時難免有些卡卡的。如果你跟我一樣先從別的語言（Java, 
+      
+    
+    </summary>
+    
+    
+    
+      <category term="python" scheme="http://yoursite.com/tags/python/"/>
+    
+      <category term="oop" scheme="http://yoursite.com/tags/oop/"/>
+    
+      <category term="design-pattern" scheme="http://yoursite.com/tags/design-pattern/"/>
+    
+  </entry>
+  
+</feed>
