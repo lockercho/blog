@@ -104,3 +104,28 @@ archive_generator:
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: ''
+
+
+markdown:
+  render:
+    html: true
+    xhtmlOut: false
+    breaks: true
+    linkify: true
+    typographer: true
+  plugins:
+    - markdown-it-abbr
+    - markdown-it-footnote
+    - markdown-it-ins
+    - markdown-it-sub
+    - markdown-it-sup
+    - markdown-it-emoji
+    - markdown-it-task-lists
+  anchors:
+    level: 2
+    collisionSuffix: ''
+    permalink: false,
+    permalinkClass: 'header-anchor'
+    permalinkSymbol: ''
+    case: 0
+    separator: ''
