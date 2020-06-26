@@ -212,7 +212,7 @@ tail ~/.okteto/okteto.log
 
 除了本文介紹的部分以外，Okteto 其實有提供了更多的選項可以設定，包含了設定環境變數、限制 resources、設定多個 port、、設定 secrets 及 PersistentVolume 等等，詳細可以看官方的 [Manifest Reference](https://okteto.com/docs/reference/manifest/index.html)
 
-遠端開發對相依於 K8S cluster 的 application 來說相當方便，但因為需要事前設定，我自己開發 API 時還是會先以本機開發 + fake data 為主，直到主要邏輯開發完畢後才放上 development cluster 測試，並搭配中斷點快速修正早期問題。但同事似乎也有人是直接以 Remote 開發為主，這個部分就很看個人，用的順手最重要。
+遠端開發對相依於 K8S cluster 的 application 來說相當方便，但因為需要事前設定，我自己開發 API 時還是會先以本機開發 + fake data 為主，直到主要邏輯開發完畢後才放上 development cluster 測試，並搭配中斷點快速修正早期問題。但同事也有人是以 Remote 開發為主（請搭配 [persistentVolume](https://okteto.com/docs/reference/manifest/index.html#persistentvolume-object-optional) 設定服用，否則每次光 Sync files 就要等半天...）。本機與遠端開發的選擇很看個人偏好，用的順手最重要囉。
 
 
 ## 參考資料
