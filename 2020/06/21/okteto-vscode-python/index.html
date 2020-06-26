@@ -104,7 +104,7 @@
 <h2 id="結語"><a class="header-anchor" href="#結語"></a>結語</h2>
 <p>本文簡單介紹了如何使用 Okteto 的 <code>Remote - Kubernetes</code> VS Code extension 來建立 Kubernetes 中的 Python 開發環境。</p>
 <p>除了本文介紹的部分以外，Okteto 其實有提供了更多的選項可以設定，包含了設定環境變數、限制 resources、設定多個 port、、設定 secrets 及 PersistentVolume 等等，詳細可以看官方的 <a href="https://okteto.com/docs/reference/manifest/index.html" target="_blank" rel="noopener">Manifest Reference</a></p>
-<p>遠端開發對相依於 K8S cluster 的 application 來說相當方便，但因為需要事前設定，我自己開發 API 時還是會先以本機開發 + fake data 為主，直到主要邏輯開發完畢後才放上 development cluster 測試，並搭配中斷點快速修正早期問題。但同事似乎也有人是直接以 Remote 開發為主，這個部分就很看個人，用的順手最重要。</p>
+<p>遠端開發對相依於 K8S cluster 的 application 來說相當方便，但因為需要事前設定，我自己開發 API 時還是會先以本機開發 + fake data 為主，直到主要邏輯開發完畢後才放上 development cluster 測試，並搭配中斷點快速修正早期問題。但同事也有人是以 Remote 開發為主（請搭配 <a href="https://okteto.com/docs/reference/manifest/index.html#persistentvolume-object-optional" target="_blank" rel="noopener">persistentVolume</a> 設定服用，否則每次光 Sync files 就要等半天…）。本機與遠端開發的選擇很看個人偏好，用的順手最重要囉。</p>
 <h2 id="參考資料"><a class="header-anchor" href="#參考資料"></a>參考資料</h2>
 <ul>
 <li><a href="https://medium.com/okteto/remote-kubernetes-development-in-visual-studio-code-with-okteto-8b96015b41a6" target="_blank" rel="noopener">Remote Kubernetes Development in Visual Studio Code with Okteto (Golang)</a></li>
