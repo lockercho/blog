@@ -1,5 +1,5 @@
 ---
-title: Observability 三本柱 - Distributed Tracing 介紹
+title: Observability 三本柱之 Distributed Tracing 介紹
 date: 2020-07-26 19:42:46
 tags: [kubernetes, distributed-tracing, observability,opentelemetry]
 ---
