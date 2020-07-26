@@ -51,7 +51,7 @@ Distributed Tracing 就是為了解決此問題而誕生的。
 
 <div style="text-align:center;padding: 20px 0;">
 <figure class="image">
-<img style="width:50%;margin-bottom:22px;" src="/blog/2020/07/20/distributed-tracing-1/services.png">
+<img style="width:50%;margin-bottom:22px;" src="/blog/2020/07/26/distributed-tracing-1/services.png">
   <figcaption>Figure 1. Example distributed system</figcaption>
 </figure>
 
@@ -68,7 +68,7 @@ Trace 也可以被理解為由多個 Span 組成的有向無環圖（Directed ac
 
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/span-DAG.png">
+<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/span-DAG.png">
   <figcaption>Figure 2. DAG View of a Trace </figcaption>
 </figure>
 </div>
@@ -84,7 +84,7 @@ Trace 也可以被理解為由多個 Span 組成的有向無環圖（Directed ac
 除了 DAG 圖以外，Span 也經常被視覺化在時間軸上，如下圖：
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/sync-services.png">
+<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/sync-services.png">
   <figcaption>Figure 4. Time-based View of Trace - 同步取用 D, E </figcaption>
 </figure>
 </div>
@@ -95,7 +95,7 @@ Trace 也可以被理解為由多個 Span 組成的有向無環圖（Directed ac
 
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/async-services.png">
+<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/async-services.png">
   <figcaption>Figure 5. Time-based View of Trace - 非同步取用 D, E </figcaption>
 </figure>
 </div>
@@ -110,7 +110,7 @@ Trace 也可以被理解為由多個 Span 組成的有向無環圖（Directed ac
 
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/tracing-perf.png">
+<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/tracing-perf.png">
   <figcaption>Table 1. Performance Benchmark of Dapper </figcaption>
 </figure>
 </div>
