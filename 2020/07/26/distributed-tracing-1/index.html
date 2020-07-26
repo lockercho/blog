@@ -1,0 +1,120 @@
+<!DOCTYPE html><html lang="zh-tw"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><meta name="author" content="Pei-Ya Chiu"><link rel="icon" href="/blog/favicon/favicon.ico"><title>PY 部落格</title><meta name="description" content=""><link rel="alternate" type="application/rss+xml" title="PY 部落格" href="/blog/atom.xml"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css"><link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"><link rel="stylesheet" href="/blog/css/main.css"><link rel="stylesheet" href="/blog/css/highlight.css"><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic"><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"><meta name="generator" content="Hexo 4.2.1"></head><body><nav class="navbar navbar-default navbar-fixed-top navbar-custom"><div class="container-fluid"><div class="navbar-header"><button type="button" data-toggle="collapse" data-target="#main-navbar" class="navbar-toggle"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="/blog/" class="navbar-brand">PY 部落格</a></div><div id="main-navbar" class="collapse navbar-collapse"><ul class="nav navbar-nav navbar-right"><li><a href="/blog/archives">Archive</a></li><li><a href="/blog/about/">About</a></li></ul></div><div class="avatar-container"><div class="avatar-img-border"><a href="/blog/"><img src="/blog/ellie.jpg" class="avatar-img"></a></div></div></div></nav><header class="header-section"><div class="intro-header no-img"><div class="container"><div class="row"><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><div class="post-heading"><h1>Observability 三本柱 - Distributed Tracing 介紹</h1><p class="post-meta">Posted on 7月 26 2020 · <a href="/blog/tags/kubernetes/" class="tag post-meta">kubernetes</a> · <a href="/blog/tags/distributed-tracing/" class="tag post-meta">distributed-tracing</a> · <a href="/blog/tags/observability/" class="tag post-meta">observability</a> · <a href="/blog/tags/opentelemetry/" class="tag post-meta">opentelemetry</a></p></div></div></div></div></div></header><div class="container"><div class="row"><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><article role="main" class="blog-post"><p>最近在工作中使用到了 <strong>Distributed Tracing</strong>（分散式追蹤），發現 Distributed Tracing 對於 Microservices 的維護與開發是非常好用且重要的技術。</p>
+<p>而雖然 <strong>Logging</strong>、<strong>Metrics</strong> 及 <strong>Distributed Tracing</strong> 被並稱為 <a href="https://www.scalyr.com/blog/three-pillars-of-observability/" target="_blank" rel="noopener">Observability 三本柱</a>，Distributed Tracing 得到的關注度卻不如前兩者。原因可能是 Logging 與 Metric 在 Monolith System 中即被大量使用，Distributed Tracing 卻是建立在 Microservice 前提之下，普及度自然比不上前兩者。</p>
+<p>而這段時間在學習與實作 Distributed Tracing 時，也發現繁體中文的相關資料有點少，因此決定寫個系列文介紹 Distributed Tracing，也當作是自己的工作筆記。</p>
+<h2 id="何謂-Distributed-Tracing？"><a class="header-anchor" href="#何謂-Distributed-Tracing？"></a>何謂 Distributed Tracing？</h2>
+<p><strong><code>Distributed Tracing</code></strong>，簡單的來說就是在監控 request 在 distributed system 或是 microservices 中的行為的技術。一個 <strong><code>Trace</code></strong>（追蹤）是用來描述網路服務在回應一個 request 時觸發的一系列事件，這些事件可能跨越了不同 process 、network boundary 或是 subsystem boundary。</p>
+<p><strong>&quot;Distributed&quot;</strong> Tracing 為何重要？以往在 Monolith System 架構時，只要在 log 中記錄好相關的 request-id，就能從 logging system 中監控與分析每個 request 的狀況。而在 microservice 的架構中，一個服務往往背後會用到多個不同的子服務，這時若沒有對記錄下來的 log 做額外處理，logging system 會失去同個 request 在不同服務之間的連結。</p>
+<p>Distributed Tracing 就是為了解決此問題而誕生的。</p>
+<h2 id="觀念介紹"><a class="header-anchor" href="#觀念介紹"></a>觀念介紹</h2>
+<p>在 Distributed Tracing 中，<strong>一個 <code>Trace</code> 描述了一個 request 在多個子服務中的不同階段分別觸發的一至多個 event</strong>。為了記錄事件在跨服務間的從屬關係以及發生順序， Distributed Tracing 規範了一系列的 headers（以 HTTP 為主，但也有 queue 與 RPC 的實作），每個子服務必須要乖乖收集這些 headers，並在對子服務送 request 時一路 propagate （傳遞）給所有子服務。</p>
+<p><strong><code>Trace</code></strong>（追蹤）與 <strong><code>Span</code></strong>（跨度，中文好像很少用到這個詞）是 Distributed Tracing 裡最重要的兩個元件。每個 Span 還會帶有一個 <strong><code>SpanContext</code></strong> 描述 Span 之間共用的狀態。</p>
+<h3 id="Trace"><a class="header-anchor" href="#Trace"></a>Trace</h3>
+<p><strong><code>Trace</code></strong> 用來描述一個 request，由一到多個  <strong><code>Span</code></strong> 組成。</p>
+<h3 id="Span"><a class="header-anchor" href="#Span"></a>Span</h3>
+<p><strong><code>Span</code></strong> 為在各服務中發生的多個不同階段的資訊，一個 Span 包含了以下資料：</p>
+<ul>
+<li>事件名稱</li>
+<li>開始與結束時間</li>
+<li>Attributes（屬性）：一系列的 key-value</li>
+<li>零到多個事件資料，每個事件也會包含自己的 Name, Timestamp 及 Attributes</li>
+<li>Parent Span ID</li>
+<li>連結到零或多個 Span</li>
+<li>SpanContext ID</li>
+</ul>
+<h3 id="SpanContext"><a class="header-anchor" href="#SpanContext"></a>SpanContext</h3>
+<p><strong><code>SpanContext</code></strong> 中包含了識別 Span 的資訊，也負責傳遞 parent span 設定的 options。</p>
+<ul>
+<li><strong>Trace ID</strong>：Trace 的 ID，為隨機產生的 16 bytes 值，用來 group 跨越服務邊界的所有屬於同個 Trace 的 Spans。</li>
+<li><strong>Span ID</strong>：Span 的 ID，為隨機產生的 8 bytes 值，用來識別 Span。當 SpanID 被傳遞至子 Span 時，SpanID 會成為子 Span 中的 Parent Span ID。</li>
+<li><strong>TraceFlags</strong>：Trace 的 options。，為 1 byte 值（含 8 bit），目前只定義了 Sampling Bit (0x1)，代表此 Trace 是否有被 sample（取樣）到。</li>
+<li><strong>TraceState</strong>：TraceState 讓 vendor 能夾帶自行定義的 key-value pairs，能用來彈性的傳遞額外的資訊或是處理 legacy field。</li>
+</ul>
+<h2 id="Trace-範例"><a class="header-anchor" href="#Trace-範例"></a>Trace 範例</h2>
+<p>假設有一個服務由 5 個子服務組成，服務間使用 RPC （Remote Procedure Call）溝通，架構如下圖：</p>
+<div style="text-align:center;padding: 20px 0;">
+<figure class="image">
+<img style="width:50%;margin-bottom:22px;" src="/blog/2020/07/20/distributed-tracing-1/services.png">
+  <figcaption>Figure 1. Example distributed system</figcaption>
+</figure>
+</div>
+<p>要為這個服務設計 Distributed Tracing，最簡單的方式就是對每個子服務產生一個 Span，每次 Request 會得到 1 個 Trace，Trace 中包含了 5 個。</p>
+<p>Distributed Tracing 中有主要有兩種視覺化的方式：<strong>Directed Acyclic Graph (DAG)</strong> 或是 <strong>Time-based Gragh</strong>。</p>
+<h3 id="DAG-View-of-Trace"><a class="header-anchor" href="#DAG-View-of-Trace"></a>DAG View of Trace</h3>
+<p>Trace 也可以被理解為由多個 Span 組成的有向無環圖（Directed acyclic graph，簡稱 DAG），如下圖：</p>
+<div style="text-align:center;width:100%;">
+<figure class="image">
+<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/span-DAG.png">
+  <figcaption>Figure 2. DAG View of a Trace </figcaption>
+</figure>
+</div>
+<p>主服務 A 收到 request 時，request header 會帶有一個在系統中唯一的 TraceID，這個 TraceID 可以在服務的 Infrastructure 層產生（例如在 K8S 中可以使用 <a href="https://istio.io/latest/docs/tasks/observability/distributed-tracing/overview/" target="_blank" rel="noopener">Istio 來注入</a>）。若 TraceID 不存於 request 中，則 A 需自行產生一個 ID。TraceID 及其他的資訊（Metadata）會以 key-value 的形式存在 SpanContext 中。系統中所有子服務在溝通時必須傳遞同一個 SpanContext 至下一個服務。</p>
+<p>一個服務可以根據需要自行產生多個 Span 以標註程式中不同的階段。但根據目前最主流的分散式追蹤的工具 OpenTelemetry 的實作，當 Trace 跨越服務邊界時，必須產生新的 Span，也就是同個 Span 是不能跨越服務邊界的（服務邊界包含了 process boundary, network 等等）</p>
+<h3 id="Time-based-View-of-Trace"><a class="header-anchor" href="#Time-based-View-of-Trace"></a>Time-based View of Trace</h3>
+<p>除了 DAG 圖以外，Span 也經常被視覺化在時間軸上，如下圖：</p>
+<div style="text-align:center;width:100%;">
+<figure class="image">
+<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/sync-services.png">
+  <figcaption>Figure 4. Time-based View of Trace - 同步取用 D, E </figcaption>
+</figure>
+</div>
+<p>以時間軸顯示 trace 時，可以很清楚地看出 request 在每個子系統中被處理的先後順序與花費時間，進而對潛在的優化方式提供 insight。</p>
+<p>以 B 服務為例，若改以非同步（asynchronous）取用 D, E 服務，能夠有效縮短 b 的 duration，進而縮短整體 a 的 duration，如下圖：</p>
+<div style="text-align:center;width:100%;">
+<figure class="image">
+<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/async-services.png">
+  <figcaption>Figure 5. Time-based View of Trace - 非同步取用 D, E </figcaption>
+</figure>
+</div>
+<p>一般而言，Time-based 的視覺化會比 DAG 更常用到，也是 <a href="https://www.jaegertracing.io/docs/1.18/" target="_blank" rel="noopener">Jaeger</a> 這個 Trace 收集系統預設的視覺化方式。</p>
+<h2 id="Sample（取樣）"><a class="header-anchor" href="#Sample（取樣）"></a>Sample（取樣）</h2>
+<p>雖然分散式追蹤產生一個 Span 的延遲極低（nano second 等級），但是對於跨多個子服務的高併發低延遲服務，開啟 Tracing 能造成的 Performance Impact 依然是很可觀的。因此實務上來說不一定會記錄所有 Request 的 Trace，而是使用 Sample（取樣）的機制選擇性記錄。</p>
+<p>下面表格是 Google 在 2010 提出的 paper <a href="https://research.google/pubs/pub36356/" target="_blank" rel="noopener">“Dapper, a Large-Scale Distributed Systems Tracing Infrastructure”</a> （強烈推薦閱讀原文，此 paper 定義了現代 Distributed Tracing 架構）中，對於當時內部使用的分散式追蹤工具 Dapper 所做的效能測試：</p>
+<div style="text-align:center;width:100%;">
+<figure class="image">
+<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/tracing-perf.png">
+  <figcaption>Table 1. Performance Benchmark of Dapper </figcaption>
+</figure>
+</div>
+<p>在這個測試中，Google 對自家的搜尋引擎 API 加上 Distributed Tracing，並設定不同的 Sampling frequency（取樣頻率）來觀察效能影響。在 Sampling rate 為 1 時（意即記錄所有 Requests 的 trace ），平均 latency 增加了 <strong>16.3%</strong> 之多，之後 Latency change % 隨著 Sampling Rate 降低而降低。而根據 paper 的說明，把 Sampling rate 降至 <strong>1/16</strong> 以下後，Tracing 對效能造成的影響就沒有那麼顯著了。（另外，Paper 中也提到了 Latency 與 Throughput 的實驗誤差個別是 2.5% 及 0.15%，這也是為什麼表格中的 Latency change % 在 Sampling rate = 1/1024 時會是負的。）</p>
+<h3 id="Sampling-Rate-設定多少好？"><a class="header-anchor" href="#Sampling-Rate-設定多少好？"></a>Sampling Rate 設定多少好？</h3>
+<p>這個效能測試的結果是否代表我們不該使用 Sampling Rate = 1 呢？我認為不是。前面也提到了產生一個 Span 只需要幾 nano second 而已，而 Google 的實驗結果對 latency 影響如此顯著，我想背後可能原因為：</p>
+<ol>
+<li>Google 搜尋 API 原本效能就很好，延遲很低，所以算出來的 change  % 就會比較高。</li>
+<li>此 API 的背後可能通過了很多個子服務，因此會產生很多 span，增加了較多 latency。</li>
+</ol>
+<p>Sampling Rate 應該設為多少？這個問題必須依據你的系統架構、效能需求以及使用情境來決定。但不變的真理是：<strong>Benchmark 是好物</strong>，在決定 Sampling Rate 前最好搭配適當的效能測試、取得數據來幫助決策。</p>
+<h3 id="如何實作-Distributed-Tracing？"><a class="header-anchor" href="#如何實作-Distributed-Tracing？"></a>如何實作 Distributed Tracing？</h3>
+<p>要對所有跨服務的 Request 增加額外的 Header 其實是滿辛苦的工作，首先不同子服務之間不一定是用一樣的 protocol 溝通，目前比較流行的方式就有 HTTP、gRPC 或是 Message Queue。且若是一個子服務實作 Tracing 時不小心寫了 bug 而沒有正確傳遞 Header，整個 Trace - Span 的結構就會中斷。</p>
+<p>由於 Distributed Tracing 的條件是如此嚴格，早在 2010 年以前分散式追蹤還是 Google 自己的內部專案時，就習慣把 Tracing（Header 收集與傳遞）實作在 Web Framework 或 Library level（稱為 “instrument”），使用者只要在跟子服務互動時使用 instrumented library 就能完成 Tracing。而後來 Open Source 社群的實作，不管是 OpenTracing、OpenConsensus 到最近的 OpenTelemetry，都會直接對較流行的程式語言以及該語言主流的 Web framework、Request library 實作相關的 instrumented library。</p>
+<p>簡單一句總結就是：先找現有的 Tracing library 來用（並且有很大的機會你可以找到！）</p>
+<h2 id="小結"><a class="header-anchor" href="#小結"></a>小結</h2>
+<p>Distributed Tracing 是很好用的技術，筆者曾經使用它來找到不少 API 的效能瓶頸，直觀的視覺化方式也能幫助團隊成員快速理解自家服務的運作。</p>
+<p>雖然 Distributed Tracing 以往得到的關注度不如 Logging 與 Metrics，但現在由於 Docker、Kubernetes 技術的普及，microservices 也幾乎是網路服務的預設架構了，相信之後 Distributed Tracing 也會漸漸的成為 microservice cluster 中的必備定番。</p>
+<h2 id="參考資料"><a class="header-anchor" href="#參考資料"></a>參考資料</h2>
+<ul>
+<li>OpenTelemetry Specification:<br>
+<a href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md" target="_blank" rel="noopener">https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md</a></li>
+<li>“Dapper, a Large-Scale Distributed Systems Tracing Infrastructure”(Google Paper):<br>
+<a href="https://research.google/pubs/pub36356/" target="_blank" rel="noopener">https://research.google/pubs/pub36356/</a></li>
+<li>Istio Distributed Tracing Overview:<br>
+<a href="https://istio.io/latest/docs/tasks/observability/distributed-tracing/overview/" target="_blank" rel="noopener">https://istio.io/latest/docs/tasks/observability/distributed-tracing/overview/</a></li>
+<li>Jaeger - A Distributed Tracing System:<br>
+<a href="https://www.jaegertracing.io/docs/1.18/" target="_blank" rel="noopener">https://www.jaegertracing.io/docs/1.18/</a></li>
+<li>Three Pillars of Observability:<br>
+<a href="https://www.scalyr.com/blog/three-pillars-of-observability/" target="_blank" rel="noopener">https://www.scalyr.com/blog/three-pillars-of-observability/</a></li>
+</ul>
+</article><ul class="pager blog-pager"><li class="next"><a href="/blog/2020/06/21/okteto-vscode-python/" data-toggle="tooltip" data-placement="top" title="使用 VS Code + Oketo 在 Kubernetes 遠端開發 - 以 Python 為例">下一篇</a></li></ul></div></div></div><footer><div class="container beautiful-jekyll-footer"><div class="row"><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><ul class="list-inline text-center footer-links"><li><a href="https://github.com/twoyao" target="_blank" rel="noopener" title="GitHub"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-stack-1x fa-inverse fa-github"></i></span></a></li></ul><p class="copyright text-muted">© Pei-Ya Chiu • 2020 • <a href="mailto:undefined"></a>
+</p><p class="theme-by text-muted">Theme by
+<a href="https://github.com/twoyao/beautiful-hexo" target="_blank" rel="noopener">beautiful-hexo</a></p></div></div></div></footer><script src="//cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script><script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/blog/js/main.js"></script><script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script><script>(function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m)
+})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+ga('create', 'UA-169935405-1', 'auto');
+ga('send', 'pageview');</script></body></html>
