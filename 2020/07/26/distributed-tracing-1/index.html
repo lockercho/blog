@@ -33,7 +33,7 @@
 <p>假設有一個服務由 5 個子服務組成，服務間使用 RPC （Remote Procedure Call）溝通，架構如下圖：</p>
 <div style="text-align:center;padding: 20px 0;">
 <figure class="image">
-<img style="width:50%;margin-bottom:22px;" src="/blog/2020/07/20/distributed-tracing-1/services.png">
+<img style="width:50%;margin-bottom:22px;" src="/blog/2020/07/26/distributed-tracing-1/services.png">
   <figcaption>Figure 1. Example distributed system</figcaption>
 </figure>
 </div>
@@ -43,7 +43,7 @@
 <p>Trace 也可以被理解為由多個 Span 組成的有向無環圖（Directed acyclic graph，簡稱 DAG），如下圖：</p>
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/span-DAG.png">
+<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/span-DAG.png">
   <figcaption>Figure 2. DAG View of a Trace </figcaption>
 </figure>
 </div>
@@ -53,7 +53,7 @@
 <p>除了 DAG 圖以外，Span 也經常被視覺化在時間軸上，如下圖：</p>
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/sync-services.png">
+<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/sync-services.png">
   <figcaption>Figure 4. Time-based View of Trace - 同步取用 D, E </figcaption>
 </figure>
 </div>
@@ -61,7 +61,7 @@
 <p>以 B 服務為例，若改以非同步（asynchronous）取用 D, E 服務，能夠有效縮短 b 的 duration，進而縮短整體 a 的 duration，如下圖：</p>
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/async-services.png">
+<img style="width:70%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/async-services.png">
   <figcaption>Figure 5. Time-based View of Trace - 非同步取用 D, E </figcaption>
 </figure>
 </div>
@@ -71,7 +71,7 @@
 <p>下面表格是 Google 在 2010 提出的 paper <a href="https://research.google/pubs/pub36356/" target="_blank" rel="noopener">“Dapper, a Large-Scale Distributed Systems Tracing Infrastructure”</a> （強烈推薦閱讀原文，此 paper 定義了現代 Distributed Tracing 架構）中，對於當時內部使用的分散式追蹤工具 Dapper 所做的效能測試：</p>
 <div style="text-align:center;width:100%;">
 <figure class="image">
-<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/20/distributed-tracing-1/tracing-perf.png">
+<img style="width:50%;margin-bottom:0px;" src="/blog/2020/07/26/distributed-tracing-1/tracing-perf.png">
   <figcaption>Table 1. Performance Benchmark of Dapper </figcaption>
 </figure>
 </div>
