@@ -6,7 +6,7 @@ tags: [kubernetes, distributed-tracing, observability,opentelemetry]
 
 最近在工作中使用到了 **Distributed Tracing**（分散式追蹤），發現 Distributed Tracing 對於 Microservices 的維護與開發是非常好用且重要的技術。
 
-而雖然 **Logging**、**Metrics** 及 **Distributed Tracing** 被並稱為 [Observability 三本柱](https://www.scalyr.com/blog/three-pillars-of-observability/)，Distributed Tracing 得到的關注度卻不如前兩者。原因可能是 Logging 與 Metric 在 Monolith System 中即被大量使用，Distributed Tracing 卻是建立在 Microservice 前提之下，普及度自然比不上前兩者。
+雖然 **Logging**、**Metrics** 及 **Distributed Tracing** 被並稱為 [Observability 三本柱](https://www.scalyr.com/blog/three-pillars-of-observability/)，Distributed Tracing 得到的關注度卻不如前兩者。原因可能是 Logging 與 Metric 在 Monolith System 中即被大量使用，Distributed Tracing 卻是建立在 Microservice 前提之下，普及度自然比不上前兩者。
 
 而這段時間在學習與實作 Distributed Tracing 時，也發現繁體中文的相關資料有點少，因此決定寫個系列文介紹 Distributed Tracing，也當作是自己的工作筆記。
 
@@ -137,7 +137,7 @@ Sampling Rate 應該設為多少？這個問題必須依據你的系統架構、
 
 Distributed Tracing 是很好用的技術，筆者曾經使用它來找到不少 API 的效能瓶頸，直觀的視覺化方式也能幫助團隊成員快速理解自家服務的運作。
 
-雖然 Distributed Tracing 以往得到的關注度不如 Logging 與 Metrics，但現在由於 Docker、Kubernetes 技術的普及，microservices 也幾乎是網路服務的預設架構了，相信之後 Distributed Tracing 也會漸漸的成為 microservice cluster 中的必備定番。
+雖然 Distributed Tracing 以往得到的關注度不如 Logging 與 Metrics，但近年由於 Docker、Kubernetes 技術的普及，microservices 也幾乎是網路服務的預設架構了，相信之後 Distributed Tracing 也會漸漸的成為 microservice cluster 中的必備定番。
 
 
 
