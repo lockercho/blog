@@ -137,9 +137,7 @@ Sampling Rate 應該設為多少？這個問題必須依據你的系統架構、
 
 Distributed Tracing 是很好用的技術，筆者曾經使用它來找到不少 API 的效能瓶頸，直觀的視覺化方式也能幫助團隊成員快速理解自家服務的運作。
 
-雖然 Distributed Tracing 以往得到的關注度不如 Logging 與 Metrics，但近年由於 Docker、Kubernetes 技術的普及，microservices 也幾乎是網路服務的預設架構了，相信之後 Distributed Tracing 也會漸漸的成為 microservice cluster 中的必備定番。
-
-
+而近年由於 Docker、Kubernetes 技術的普及，microservices 也幾乎是網路服務的預設架構了，相信未來 Distributed Tracing 也會漸漸的成為 microservice cluster 中的必備定番。
 
 
 
